@@ -14,6 +14,9 @@ export default function App() {
     const [legalType, setLegalType] = useState(null);
     const [docModalOpen, setDocModalOpen] = useState(false);
 
+    // Auto-retry state when backend server is still booting up
+    const [backendWaking, setBackendWaking] = useState(false);
+
     const [docRequests, setDocRequests] = useState(() => {
         const saved = localStorage.getItem('bb_doc_requests');
         return saved ? JSON.parse(saved) : [];
@@ -58,8 +61,17 @@ export default function App() {
             setComments(commentData.comments || []);
             setAuthLogs(authLogData.logs || []);
             setSystemLogs(sysLogData.logs || []);
+
+            // Clear waking banner once live data succeeds
+            setBackendWaking(false);
         } catch (err) {
-            console.error('Error loading portal data:', err);
+            console.warn('Backend still starting up, retrying in 2s...', err);
+
+            // Show banner and retry every 2 seconds until port 5001 responds
+            setBackendWaking(true);
+            setTimeout(() => {
+                loadAllData();
+            }, 2000);
         }
     }, [search, statusFilter]);
 
@@ -79,13 +91,27 @@ export default function App() {
     };
 
     const handleCreateProject = async (formData) => {
-        await apiService.createProject({ ...formData, username: adminUser?.name });
-        await loadAllData();
+        try {
+            await apiService.createProject({ ...formData, username: adminUser?.name });
+            await loadAllData();
+            alert('Bagong proyekto ay matagumpay na naidagdag!');
+        } catch (err) {
+            console.error('Failed to create project:', err);
+            alert(err?.message || 'Hindi naidagdag ang bagong proyekto. I-check ang server.');
+            throw err;
+        }
     };
 
     const handleUpdateProject = async (id, formData) => {
-        await apiService.updateProject(id, { ...formData, username: adminUser?.name });
-        await loadAllData();
+        try {
+            await apiService.updateProject(id, { ...formData, username: adminUser?.name });
+            await loadAllData();
+            alert('Project updated successfully!');
+        } catch (err) {
+            console.error('Failed to update project:', err);
+            alert(err?.message || 'Hindi na-save ang project update. I-check ang backend server o login session.');
+            throw err;
+        }
     };
 
     const handleSubmitComment = async (residentName, message) => {
@@ -117,6 +143,13 @@ export default function App() {
                 adminUser={adminUser}
                 onLogout={handleLogout}
             />
+
+            {/* Sync status banner while backend API is booting */}
+            {backendWaking && (
+                <div className="bg-amber-500 text-slate-950 text-xs font-bold text-center py-2 px-4">
+                    Connecting to Barangay Maunlad database server... Syncing live records automatically.
+                </div>
+            )}
 
             {view === 'landing' && (
                 <LandingPage

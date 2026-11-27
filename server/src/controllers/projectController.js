@@ -1,10 +1,34 @@
 const db = require('../config/db');
 
+const ensureAuditLogsTable = async () => {
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            action_type VARCHAR(50) NOT NULL,
+            description TEXT NOT NULL,
+            performed_by VARCHAR(150) DEFAULT 'Admin',
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+};
+
+const writeAuditLog = async (actionType, description, performedBy = 'Admin') => {
+    try {
+        await ensureAuditLogsTable();
+        await db.query(
+            'INSERT INTO audit_logs (action_type, description, performed_by) VALUES (?, ?, ?)',
+            [actionType, description, performedBy || 'Admin']
+        );
+    } catch (logErr) {
+        console.warn('Audit log skipped:', logErr.message);
+    }
+};
+
 exports.getProjects = async (req, res) => {
     const { search = '', status = '' } = req.query;
     try {
         let query = `
-            SELECT p.*, s.* 
+            SELECT s.*, p.* 
             FROM projects p
             LEFT JOIN sectors s ON p.sector_id = s.id
             WHERE p.project_title LIKE ?
@@ -20,7 +44,6 @@ exports.getProjects = async (req, res) => {
         const [rawProjects] = await db.query(query, params);
         const projects = rawProjects.map((row) => ({
             ...row,
-            id: row.id, // Tiyakin na project id ang gagamitin at hindi na-overwrite ng sector id
             sector: row.sector_name || row.name || row.sector || 'General Sector',
             kagawad: row.kagawad || row.kagawad_in_charge || row.lead_official || 'Barangay Council'
         }));
@@ -67,27 +90,33 @@ exports.createProject = async (req, res) => {
         status, target_beneficiaries, start_date, target_date, image_url, username
     } = req.body;
 
+    const cleanStart = start_date && String(start_date).trim() !== '' ? String(start_date).split('T')[0] : null;
+    const cleanTarget = target_date && String(target_date).trim() !== '' ? String(target_date).split('T')[0] : null;
+
     try {
         const [result] = await db.query(
             `INSERT INTO projects 
             (project_title, sector_id, budget_allocated, budget_spent, status, target_beneficiaries, start_date, target_date, image_url) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                project_title, sector_id, budget_allocated, budget_spent,
-                status, target_beneficiaries || null,
-                start_date || null, target_date || null, image_url || null
+                project_title,
+                Number(sector_id) || 1,
+                Number(budget_allocated) || 0,
+                Number(budget_spent) || 0,
+                status,
+                target_beneficiaries || null,
+                cleanStart,
+                cleanTarget,
+                image_url || null
             ]
         );
 
-        await db.query(
-            'INSERT INTO audit_logs (action_type, description, performed_by) VALUES (?, ?, ?)',
-            ['CREATE', `Added project: ${project_title}`, username || 'Admin']
-        );
+        await writeAuditLog('CREATE', `Added project: ${project_title}`, username || 'Admin');
 
         res.status(201).json({ id: result.insertId, message: 'Project created successfully.' });
     } catch (err) {
         console.error('Create project error:', err);
-        res.status(500).json({ message: 'Failed to create project.' });
+        res.status(500).json({ message: 'Failed to create project.', error: err.message });
     }
 };
 
@@ -98,6 +127,9 @@ exports.updateProject = async (req, res) => {
         status, target_beneficiaries, start_date, target_date, image_url, username
     } = req.body;
 
+    const cleanStart = start_date && String(start_date).trim() !== '' ? String(start_date).split('T')[0] : null;
+    const cleanTarget = target_date && String(target_date).trim() !== '' ? String(target_date).split('T')[0] : null;
+
     try {
         await db.query(
             `UPDATE projects SET 
@@ -105,23 +137,25 @@ exports.updateProject = async (req, res) => {
                 status = ?, target_beneficiaries = ?, start_date = ?, target_date = ?, image_url = ?
             WHERE id = ?`,
             [
-                project_title, sector_id, budget_allocated, budget_spent,
-                status, target_beneficiaries || null,
-                start_date ? start_date.split('T')[0] : null,
-                target_date ? target_date.split('T')[0] : null,
-                image_url || null, id
+                project_title,
+                Number(sector_id) || 1,
+                Number(budget_allocated) || 0,
+                Number(budget_spent) || 0,
+                status,
+                target_beneficiaries || null,
+                cleanStart,
+                cleanTarget,
+                image_url || null,
+                id
             ]
         );
 
-        await db.query(
-            'INSERT INTO audit_logs (action_type, description, performed_by) VALUES (?, ?, ?)',
-            ['UPDATE', `Updated project: ${project_title}`, username || 'Admin']
-        );
+        await writeAuditLog('UPDATE', `Updated project: ${project_title}`, username || 'Admin');
 
         res.json({ message: 'Project updated successfully.' });
     } catch (err) {
         console.error('Update project error:', err);
-        res.status(500).json({ message: 'Failed to update project.' });
+        res.status(500).json({ message: 'Failed to update project.', error: err.message });
     }
 };
 
@@ -133,10 +167,7 @@ exports.deleteProject = async (req, res) => {
 
         await db.query('DELETE FROM projects WHERE id = ?', [id]);
 
-        await db.query(
-            'INSERT INTO audit_logs (action_type, description, performed_by) VALUES (?, ?, ?)',
-            ['DELETE', `Deleted project: ${title}`, req.admin?.admin_name || 'Admin']
-        );
+        await writeAuditLog('DELETE', `Deleted project: ${title}`, req.admin?.admin_name || 'Admin');
 
         res.json({ message: 'Project deleted successfully.' });
     } catch (err) {
@@ -147,6 +178,7 @@ exports.deleteProject = async (req, res) => {
 
 exports.getSystemLogs = async (req, res) => {
     try {
+        await ensureAuditLogsTable();
         const [logs] = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 50');
         res.json({ logs });
     } catch (err) {

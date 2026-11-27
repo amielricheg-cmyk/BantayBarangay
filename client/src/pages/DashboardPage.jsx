@@ -4,6 +4,7 @@ import {
     Download, FileCheck2, X
 } from 'lucide-react';
 import SummaryCards from '../components/SummaryCards';
+import SavingsCard from '../components/SavingsCard';
 import BudgetCharts from '../components/BudgetCharts';
 import ProjectTable from '../components/ProjectTable';
 import ProjectFormModal from '../components/ProjectFormModal';
@@ -107,13 +108,17 @@ export default function DashboardPage({
     };
 
     const handleSaveProject = async (formData) => {
-        if (editingProject) {
-            await onUpdateProject(editingProject.id, formData);
-        } else {
-            await onCreateProject(formData);
+        try {
+            if (editingProject) {
+                await onUpdateProject(editingProject.id, formData);
+            } else {
+                await onCreateProject(formData);
+            }
+            setModalOpen(false);
+            setEditingProject(null);
+        } catch (err) {
+            // Panatilihing bukas ang modal kapag may error para ma-check o ma-retry
         }
-        setModalOpen(false);
-        setEditingProject(null);
     };
 
     return (
@@ -166,6 +171,9 @@ export default function DashboardPage({
 
             {/* 4 Asymmetric KPI Summary Cards */}
             <SummaryCards summary={summary} />
+
+            {/* Barangay Savings & Multi-Year Reserve Card */}
+            <SavingsCard summary={summary} isAdmin={isAdmin} />
 
             {/* Visual Charts */}
             <BudgetCharts summary={summary} sectorBreakdown={sectorBreakdown} />

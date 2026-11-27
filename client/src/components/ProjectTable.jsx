@@ -61,7 +61,7 @@ export default function ProjectTable({ projects, isAdmin, onEdit }) {
                                     >
                                         <td className="py-4 px-5">
                                             <div className="flex items-start gap-3.5">
-                                                {proj.image_url ? (
+                                                {proj.status === 'Done' && proj.image_url ? (
                                                     <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shrink-0 shadow-xs">
                                                         <img
                                                             src={proj.image_url}
@@ -72,7 +72,9 @@ export default function ProjectTable({ projects, isAdmin, onEdit }) {
                                                 ) : (
                                                     <div className="w-16 h-16 rounded-xl bg-slate-100 border border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 shrink-0">
                                                         <ImageIcon size={16} />
-                                                        <span className="text-[9px] mt-0.5">No Photo</span>
+                                                        <span className="text-[9px] mt-0.5">
+                                                            {proj.status === 'Ongoing' ? 'Ongoing' : 'No Photo'}
+                                                        </span>
                                                     </div>
                                                 )}
 
@@ -182,7 +184,7 @@ export default function ProjectTable({ projects, isAdmin, onEdit }) {
                         </div>
 
                         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto text-sm">
-                            {selectedProject.image_url && (
+                            {selectedProject.status === 'Done' && selectedProject.image_url && (
                                 <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
                                     <img
                                         src={selectedProject.image_url}

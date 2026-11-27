@@ -6,24 +6,24 @@ import {
 
 const DEFAULT_MOMENTS = [
     {
-        url: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80',
-        caption: 'Barangay General Assembly & Budget Consultation'
-    },
-    {
         url: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=800&q=80',
-        caption: 'Community Relief & Disaster Preparedness Distribution'
+        caption: 'Bayanihan Relief & Evacuation Kit Distribution'
     },
     {
         url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
-        caption: 'Clean-Up Drive & Drainage Declogging Operations'
+        caption: 'Barangay Maunlad Clean-Up Drive & Drainage Declogging'
     },
     {
-        url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80',
-        caption: 'Sangguniang Kabataan (SK) Youth Leadership Summit'
+        url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80',
+        caption: 'SK Youth Digital Literacy & Computer Training'
     },
     {
-        url: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=800&q=80',
-        caption: 'Barangay Health Center Medical & Dental Mission'
+        url: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=800&q=80',
+        caption: 'Libreng Konsulta at Gamot sa Barangay Health Center'
+    },
+    {
+        url: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+        caption: 'Barangay General Assembly & Public Budget Hearing'
     }
 ];
 
