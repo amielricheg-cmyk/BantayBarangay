@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     ArrowRight, ShieldCheck, Calendar, FileText, Code2,
-    CheckCircle2, Lock, Server, Sparkles, Scale
+    CheckCircle2, Lock, Server, Scale
 } from 'lucide-react';
 
 const DEFAULT_MOMENTS = [
@@ -63,7 +63,6 @@ export default function LandingPage({
 }) {
     const [activeTab, setActiveTab] = useState('2027');
 
-    // Isama ang actual uploaded photos mula sa projects kung meron
     const uploadedMoments = projects
         .filter((p) => p.image_url)
         .map((p) => ({ url: p.image_url, caption: p.project_title }));
@@ -74,38 +73,38 @@ export default function LandingPage({
 
     return (
         <div className="bg-[#FAF9F6] text-slate-900">
-            {/* 1. HERO SECTION WITH BARANGAY COMMUNITY PHOTO + GRADIENT FADE */}
-            <section className="relative overflow-hidden bg-slate-950 text-white">
-                {/* Background Community Image */}
+            {/* 1. HERO SECTION WITH COMMUNITY PHOTO + LIGHTER BLUE GRADIENT */}
+            <section className="relative overflow-hidden bg-slate-900 text-white">
                 <div
-                    className="absolute inset-0 bg-cover bg-center opacity-35 scale-105"
+                    className="absolute inset-0 bg-cover bg-center opacity-60 scale-105"
                     style={{
                         backgroundImage: `url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1800&q=80')`
                     }}
                 />
-                {/* Deep Civic Blue to Bottom Fade Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-blue-950/90 via-slate-950/85 to-[#FAF9F6]" />
+                {/* Lighter Blue Gradient so Community Photo Shines Through */}
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-900/65 via-blue-950/60 to-[#FAF9F6]" />
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-24">
-                    <div className="max-w-3xl space-y-6">
-                        <div className="flex items-center gap-3">
-                            
-                        
-                            <span className="text-xs font-bold tracking-[0.2em] uppercase text-blue-200">
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-24">
+                    <div className="max-w-4xl space-y-5">
+                        <div>
+                            <span className="text-xs font-bold tracking-[0.18em] uppercase text-blue-100 drop-shadow">
                                 PONDO NATIN • KARAPATAN NATIN • KINABUKASAN NATIN
                             </span>
                         </div>
 
-                        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.08] text-white">
-                            Bawat Piso, May Resibo.{' '}
-                            <span className="text-blue-200/90">Bawat Proyekto, May Progreso!</span>
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-white drop-shadow-sm">
+                            <span className="block">Bawat Piso, May Resibo.</span>
+                            <span className="block text-emerald-300 mt-1">
+                                Bawat Proyekto, May Progreso!
+                            </span>
                         </h1>
 
-                        <p className="text-base sm:text-lg text-slate-200 max-w-2xl leading-relaxed">
-                            Pera ng Bayan, Dapat Alam ng Mamamayan! Subaybayan ang pondo, badyet, at aktwal na larawan ng mga proyektong pang-kaunlaran ng Barangay Maunlad nang hayag at direkta.
+                        <p className="text-base sm:text-lg text-slate-100 max-w-2xl leading-relaxed drop-shadow-xs">
+                            Pera ng Bayan, Dapat Alam ng Mamamayan! Subaybayan ang pondo, badyet, at
+                            aktwal na larawan ng mga proyektong pang-kaunlaran ng Barangay Maunlad nang
+                            hayag at direkta.
                         </p>
 
-                        {/* Dual Naga-Inspired Action Pills */}
                         <div className="flex flex-wrap items-center gap-3 pt-2">
                             <a
                                 href="#planned-2027"
@@ -116,14 +115,14 @@ export default function LandingPage({
                             </a>
                             <button
                                 onClick={onEnterResident}
-                                className="px-6 py-3.5 rounded-full bg-slate-900/75 hover:bg-slate-900 text-white border border-white/30 backdrop-blur-md font-bold text-sm transition"
+                                className="px-6 py-3.5 rounded-full bg-blue-950/80 hover:bg-blue-950 text-white border border-white/35 backdrop-blur-md font-bold text-sm transition"
                             >
                                 Where the 2026 budget went
                             </button>
                         </div>
                     </div>
 
-                    {/* Floating Quick Metrics Strip (Elevated Card) */}
+                    {/* Floating Quick Metrics Strip */}
                     <div className="mt-14 bg-white rounded-2xl shadow-xl border border-slate-200/90 p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-slate-900">
                         <div className="border-b sm:border-b-0 sm:border-r border-slate-200 pb-4 sm:pb-0 sm:pr-6">
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -145,13 +144,13 @@ export default function LandingPage({
                                 ₱1,200,000
                             </div>
                             <p className="text-xs text-slate-500 mt-1">
-                                Open for Resident Deliberation & Review
+                                Open for Resident Deliberation &amp; Review
                             </p>
                         </div>
 
                         <div>
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                                Active & Verified Projects
+                                Active &amp; Verified Projects
                             </span>
                             <div className="text-3xl sm:text-4xl font-black text-emerald-600 mt-1">
                                 {(Number(summary.completed_projects || 0) + Number(summary.ongoing_projects || 0)) || 5}{' '}
@@ -161,13 +160,13 @@ export default function LandingPage({
                                 onClick={onEnterResident}
                                 className="text-xs font-bold text-blue-600 hover:underline mt-1 inline-flex items-center gap-1"
                             >
-                                Inspect live ledger & photos <ArrowRight size={12} />
+                                Inspect live ledger &amp; photos <ArrowRight size={12} />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Multi-Color Civic Accent Bar */}
+                {/* BetterGov / Naga Inspired Multi-Color Civic Strip */}
                 <div className="h-1.5 w-full grid grid-cols-5">
                     <div className="bg-rose-600" />
                     <div className="bg-emerald-500" />
@@ -184,12 +183,11 @@ export default function LandingPage({
                         Barangay Maunlad in action
                     </h2>
                     <p className="text-sm sm:text-base text-slate-600 mt-1">
-                        Moments from the barangay&apos;s programs, infrastructure turnovers, and community assemblies.
+                        Moments from the barangay&apos;s programs, projects, and communities.
                     </p>
                 </div>
 
                 <div className="space-y-4">
-                    {/* Row 1: Slides Left */}
                     <div className="animate-marquee-left gap-4">
                         {rowOne.map((item, idx) => (
                             <div
@@ -210,7 +208,6 @@ export default function LandingPage({
                         ))}
                     </div>
 
-                    {/* Row 2: Slides Right */}
                     <div className="animate-marquee-right gap-4">
                         {rowTwo.map((item, idx) => (
                             <div
@@ -233,7 +230,7 @@ export default function LandingPage({
                 </div>
             </section>
 
-            {/* 3. WHAT'S PLANNED FOR 2027 (ANNUAL INVESTMENT PLAN) */}
+            {/* 3. WHAT'S PLANNED FOR 2027 */}
             <section id="planned-2027" className="py-14 bg-white border-y border-slate-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
@@ -304,7 +301,6 @@ export default function LandingPage({
             {/* 4. ABOUT THE DEVELOPER, CLOUD SECURITY & GOVERNANCE AGREEMENTS */}
             <footer className="bg-slate-950 text-slate-300 pt-14 pb-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-slate-800">
-                    {/* About the Developer */}
                     <div className="lg:col-span-5 space-y-3">
                         <div className="inline-flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
                             <Code2 size={16} /> About the Developer
@@ -322,17 +318,16 @@ export default function LandingPage({
                         </p>
                     </div>
 
-                    {/* Cloud Hosting & SSL Architecture */}
                     <div className="lg:col-span-4 space-y-3">
                         <div className="inline-flex items-center gap-2 text-blue-400 text-xs font-bold uppercase tracking-wider">
-                            <Server size={16} /> Production Security & Cloud Readiness
+                            <Server size={16} /> Production Security &amp; Cloud Readiness
                         </div>
                         <ul className="space-y-2 text-xs text-slate-400">
                             <li className="flex items-start gap-2">
                                 <Lock size={14} className="text-emerald-400 shrink-0 mt-0.5" />
                                 <span>
                                     <strong className="text-slate-200">SSL/TLS Encrypted Deployment:</strong>{' '}
-                                    Ready for production offload on <strong className="text-white">AWS Lightsail / EC2</strong> with HTTPS SSL certificate & custom domain.
+                                    Ready for production offload on <strong className="text-white">AWS Lightsail / EC2</strong> with HTTPS SSL certificate &amp; custom domain.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
@@ -345,17 +340,16 @@ export default function LandingPage({
                         </ul>
                     </div>
 
-                    {/* Legal & Governance Agreements */}
                     <div className="lg:col-span-3 space-y-3">
                         <div className="inline-flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                            <Scale size={16} /> Governance & Contracts
+                            <Scale size={16} /> Governance &amp; Contracts
                         </div>
                         <div className="flex flex-col gap-2 text-xs">
                             <button
                                 onClick={() => onOpenLegal('terms')}
                                 className="text-left px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold flex items-center justify-between transition"
                             >
-                                <span>Terms & Conditions</span>
+                                <span>Terms &amp; Conditions</span>
                                 <FileText size={14} className="text-blue-400" />
                             </button>
                             <button

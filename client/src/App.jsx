@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from './services/api';
 import Navbar from './components/Navbar';
 import LegalModal from './components/LegalModal';
+import DocumentRequestModal from './components/DocumentRequestModal';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -11,6 +12,13 @@ import OfficialsPage from './pages/OfficialsPage';
 export default function App() {
     const [view, setView] = useState('landing');
     const [legalType, setLegalType] = useState(null);
+    const [docModalOpen, setDocModalOpen] = useState(false);
+
+    const [docRequests, setDocRequests] = useState(() => {
+        const saved = localStorage.getItem('bb_doc_requests');
+        return saved ? JSON.parse(saved) : [];
+    });
+
     const [adminUser, setAdminUser] = useState(() => {
         const saved = localStorage.getItem('bb_admin_user');
         return saved ? JSON.parse(saved) : null;
@@ -30,6 +38,10 @@ export default function App() {
 
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+
+    useEffect(() => {
+        localStorage.setItem('bb_doc_requests', JSON.stringify(docRequests));
+    }, [docRequests]);
 
     const loadAllData = useCallback(async () => {
         try {
@@ -87,6 +99,16 @@ export default function App() {
         await loadAllData();
     };
 
+    const handleSubmitDocRequest = (newReq) => {
+        setDocRequests((prev) => [newReq, ...prev]);
+    };
+
+    const handleMarkDocReady = (id) => {
+        setDocRequests((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, status: 'Ready for Pickup' } : r))
+        );
+    };
+
     return (
         <div className="min-h-screen bg-slate-100 text-slate-900 font-sans">
             <Navbar
@@ -134,11 +156,22 @@ export default function App() {
                     onUpdateProject={handleUpdateProject}
                     onSubmitComment={handleSubmitComment}
                     onDeleteComment={handleDeleteComment}
+                    onOpenDocRequests={() => setDocModalOpen(true)}
+                    docRequestCount={docRequests.filter((r) => r.status !== 'Ready for Pickup').length}
                 />
             )}
 
             {view === 'hotlines' && <HotlinesPage onBack={() => setView('dashboard')} />}
             {view === 'officials' && <OfficialsPage onBack={() => setView('dashboard')} />}
+
+            <DocumentRequestModal
+                isOpen={docModalOpen}
+                onClose={() => setDocModalOpen(false)}
+                isAdmin={Boolean(adminUser)}
+                requests={docRequests}
+                onSubmitRequest={handleSubmitDocRequest}
+                onMarkReady={handleMarkDocReady}
+            />
 
             <LegalModal type={legalType} onClose={() => setLegalType(null)} />
         </div>
