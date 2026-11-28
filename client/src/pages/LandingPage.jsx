@@ -81,7 +81,6 @@ export default function LandingPage({
                         backgroundImage: `url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1800&q=80')`
                     }}
                 />
-                {/* Lighter Blue Gradient so Community Photo Shines Through */}
                 <div className="absolute inset-0 bg-gradient-to-b from-blue-900/65 via-blue-950/60 to-[#FAF9F6]" />
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-24">
@@ -114,6 +113,7 @@ export default function LandingPage({
                                 What&apos;s planned for 2027 <ArrowRight size={16} />
                             </a>
                             <button
+                                type="button"
                                 onClick={onEnterResident}
                                 className="px-6 py-3.5 rounded-full bg-blue-950/80 hover:bg-blue-950 text-white border border-white/35 backdrop-blur-md font-bold text-sm transition"
                             >
@@ -157,6 +157,7 @@ export default function LandingPage({
                                 Programs
                             </div>
                             <button
+                                type="button"
                                 onClick={onEnterResident}
                                 className="text-xs font-bold text-blue-600 hover:underline mt-1 inline-flex items-center gap-1"
                             >
@@ -166,7 +167,7 @@ export default function LandingPage({
                     </div>
                 </div>
 
-                {/* BetterGov / Naga Inspired Multi-Color Civic Strip */}
+                {/* Multi-Color Civic Strip */}
                 <div className="h-1.5 w-full grid grid-cols-5">
                     <div className="bg-rose-600" />
                     <div className="bg-emerald-500" />
@@ -248,6 +249,7 @@ export default function LandingPage({
 
                         <div className="inline-flex rounded-xl bg-slate-100 p-1">
                             <button
+                                type="button"
                                 onClick={() => setActiveTab('2027')}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
                                     activeTab === '2027'
@@ -258,6 +260,7 @@ export default function LandingPage({
                                 2027 Pipeline (₱1.20M)
                             </button>
                             <button
+                                type="button"
                                 onClick={onEnterResident}
                                 className="px-4 py-2 rounded-lg text-xs font-bold text-blue-700 hover:bg-white transition"
                             >
@@ -298,7 +301,7 @@ export default function LandingPage({
                 </div>
             </section>
 
-            {/* 4. ABOUT THE DEVELOPER, CLOUD SECURITY & GOVERNANCE AGREEMENTS */}
+            {/* 4. ABOUT THE DEVELOPER, DEPLOYMENT SECURITY & GOVERNANCE AGREEMENTS */}
             <footer className="bg-slate-950 text-slate-300 pt-14 pb-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-slate-800">
                     <div className="lg:col-span-5 space-y-3">
@@ -320,14 +323,14 @@ export default function LandingPage({
 
                     <div className="lg:col-span-4 space-y-3">
                         <div className="inline-flex items-center gap-2 text-blue-400 text-xs font-bold uppercase tracking-wider">
-                            <Server size={16} /> Production Security &amp; Cloud Readiness
+                            <Server size={16} /> Deployment &amp; Security Readiness
                         </div>
                         <ul className="space-y-2 text-xs text-slate-400">
                             <li className="flex items-start gap-2">
                                 <Lock size={14} className="text-emerald-400 shrink-0 mt-0.5" />
                                 <span>
-                                    <strong className="text-slate-200">SSL/TLS Encrypted Deployment:</strong>{' '}
-                                    Ready for production offload on <strong className="text-white">AWS Lightsail / EC2</strong> with HTTPS SSL certificate &amp; custom domain.
+                                    <strong className="text-slate-200">Flexible Cloud &amp; Web Hosting:</strong>{' '}
+                                    Ready for deployment across <strong className="text-white">Netlify, Render, VPS, or cloud platforms</strong> with HTTPS/SSL support and custom domain.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
@@ -346,6 +349,7 @@ export default function LandingPage({
                         </div>
                         <div className="flex flex-col gap-2 text-xs">
                             <button
+                                type="button"
                                 onClick={() => onOpenLegal('terms')}
                                 className="text-left px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold flex items-center justify-between transition"
                             >
@@ -353,6 +357,7 @@ export default function LandingPage({
                                 <FileText size={14} className="text-blue-400" />
                             </button>
                             <button
+                                type="button"
                                 onClick={() => onOpenLegal('contract')}
                                 className="text-left px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold flex items-center justify-between transition"
                             >
@@ -360,6 +365,7 @@ export default function LandingPage({
                                 <CheckCircle2 size={14} className="text-emerald-400" />
                             </button>
                             <button
+                                type="button"
                                 onClick={onEnterLogin}
                                 className="text-left px-3.5 py-2.5 rounded-xl bg-blue-950/60 hover:bg-blue-900/60 border border-blue-800/50 text-blue-300 font-semibold transition"
                             >
@@ -371,7 +377,7 @@ export default function LandingPage({
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
                     <span>© 2026 Bantay-Barangay Transparency Portal • Barangay Maunlad. All Rights Reserved.</span>
-                    <span>Architected for AWS Cloud Deployment • HTTPS/SSL Ready</span>
+                    <span>Flexible Cloud &amp; Web Hosting Ready • HTTPS/SSL Ready</span>
                 </div>
             </footer>
         </div>

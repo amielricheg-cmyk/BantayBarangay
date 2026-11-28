@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, ShieldCheck, ArrowLeft, KeyRound } from 'lucide-react';
+import { Lock, ArrowLeft, KeyRound } from 'lucide-react';
 import { apiService } from '../services/api';
 
 const OFFICIALS = [
@@ -36,6 +36,7 @@ export default function AdminLoginPage({ onLoginSuccess, onBack }) {
         <div className="min-h-[calc(100vh-4rem)] bg-slate-100 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-xl border border-slate-200">
                 <button
+                    type="button"
                     onClick={onBack}
                     className="text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1 mb-6"
                 >
@@ -43,13 +44,13 @@ export default function AdminLoginPage({ onLoginSuccess, onBack }) {
                 </button>
 
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-950 text-emerald-400 flex items-center justify-center shadow">
-                        <ShieldCheck size={26} />
+                    <div className="w-11 h-11 rounded-2xl bg-slate-900 text-emerald-300 border border-slate-800 flex items-center justify-center shadow-sm">
+                        <KeyRound size={20} strokeWidth={1.8} />
                     </div>
                     <div>
                         <h2 className="text-xl font-extrabold text-slate-900">Official Admin Login</h2>
                         <p className="text-xs text-slate-500">
-                            Protected by JWT Encryption & Audit Logging
+                            Protected by JWT Encryption &amp; Audit Logging
                         </p>
                     </div>
                 </div>
@@ -87,6 +88,7 @@ export default function AdminLoginPage({ onLoginSuccess, onBack }) {
                         <div className="relative">
                             <KeyRound
                                 size={16}
+                                strokeWidth={1.8}
                                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                             />
                             <input
@@ -107,7 +109,7 @@ export default function AdminLoginPage({ onLoginSuccess, onBack }) {
                         type="submit"
                         className="w-full py-3.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition"
                     >
-                        <Lock size={16} />
+                        <Lock size={16} strokeWidth={1.8} />
                         {loading ? 'Verifying Credentials...' : 'Authenticate & Enter Dashboard'}
                     </button>
                 </form>

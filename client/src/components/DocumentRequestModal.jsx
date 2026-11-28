@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-    X, FileCheck2, Send, CheckCircle2, Clock,
-    Phone, Mail, Copy, Check, ArrowLeft, ArrowRight,
-    FileText, Landmark, Home, ShieldCheck, Info
+    X, FileCheck2, Send, CheckCircle2, Calendar, Clock,
+    ArrowLeft, ArrowRight, FileText, Landmark, Home,
+    ShieldCheck, Info, Search, CheckCheck
 } from 'lucide-react';
 
 const DOCUMENT_CATALOG = [
@@ -40,30 +40,50 @@ const DOCUMENT_CATALOG = [
     }
 ];
 
+const PICKUP_TIME_SLOTS = [
+    'Morning (8:00 AM – 11:00 AM)',
+    'Afternoon (1:00 PM – 4:00 PM)',
+    'Late Afternoon (4:00 PM – 5:00 PM)'
+];
+
 export default function DocumentRequestModal({
     isOpen,
     onClose,
     isAdmin,
     requests = [],
     onSubmitRequest,
-    onMarkReady
+    onMarkReady,
+    onMarkPickedUp
 }) {
-    // Step 1 = Choose Document Type | Step 2 = Fill Specific Form
     const [step, setStep] = useState(1);
     const [selectedDoc, setSelectedDoc] = useState(null);
+    const [docQuery, setDocQuery] = useState('');
 
-    // Common Resident Info
+    // Common Resident Info + Self-Selected Pickup Schedule
     const [fullName, setFullName] = useState('');
     const [purokAddress, setPurokAddress] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
-    const [email, setEmail] = useState('');
+    const [pickupDate, setPickupDate] = useState('');
+    const [pickupTimeSlot, setPickupTimeSlot] = useState(PICKUP_TIME_SLOTS[0]);
 
     // Dynamic Document-Specific Details
     const [extraDetails, setExtraDetails] = useState({});
     const [lastReceipt, setLastReceipt] = useState(null);
-    const [copiedId, setCopiedId] = useState(null);
+
+    // Admin Filter State
+    const [adminSearch, setAdminSearch] = useState('');
 
     if (!isOpen) return null;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const filteredCatalog = DOCUMENT_CATALOG.filter((doc) => {
+        const q = docQuery.trim().toLowerCase();
+        if (!q) return true;
+        return (
+            doc.title.toLowerCase().includes(q) ||
+            doc.subtitle.toLowerCase().includes(q)
+        );
+    });
 
     const updateExtra = (key, val) => {
         setExtraDetails((prev) => ({ ...prev, [key]: val }));
@@ -77,9 +97,8 @@ export default function DocumentRequestModal({
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        const refCode = `BB-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const refCode = `BM-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Buuin ang summary string ng specific details para makita agad ng Admin
         const formattedSpecifics = Object.entries(extraDetails)
             .filter(([, v]) => v && String(v).trim() !== '')
             .map(([k, v]) => `${k}: ${v}`)
@@ -93,8 +112,8 @@ export default function DocumentRequestModal({
             docType: selectedDoc.title,
             purpose: extraDetails['Purpose'] || extraDetails['Occupation'] || 'Official Transaction',
             specificDetails: formattedSpecifics,
-            contactNumber: contactNumber.trim(),
-            email: email.trim(),
+            pickupDate,
+            pickupTimeSlot,
             status: 'Pending Processing',
             createdAt: new Date().toLocaleString('en-PH')
         };
@@ -103,19 +122,30 @@ export default function DocumentRequestModal({
         setLastReceipt(newReq);
         setFullName('');
         setPurokAddress('');
-        setContactNumber('');
-        setEmail('');
+        setPickupDate('');
+        setPickupTimeSlot(PICKUP_TIME_SLOTS[0]);
         setExtraDetails({});
         setStep(1);
         setSelectedDoc(null);
     };
 
-    const copyPickupNotice = (reqItem) => {
-        const text = `Barangay Maunlad Notice (${reqItem.refCode}): Hello ${reqItem.fullName}, your ${reqItem.docType} is now READY FOR PICKUP at Barangay Hall. Please bring your valid ID.`;
-        navigator.clipboard?.writeText(text);
-        setCopiedId(reqItem.id);
-        setTimeout(() => setCopiedId(null), 2000);
+    const handleSetPickedUp = (item) => {
+        if (typeof onMarkPickedUp === 'function') {
+            onMarkPickedUp(item.id);
+        } else if (typeof onMarkReady === 'function') {
+            onMarkReady(item.id, 'Picked Up');
+        }
     };
+
+    const visibleAdminRequests = requests.filter((item) => {
+        const q = adminSearch.trim().toLowerCase();
+        if (!q) return true;
+        return (
+            (item.refCode || '').toLowerCase().includes(q) ||
+            (item.fullName || '').toLowerCase().includes(q) ||
+            (item.docType || '').toLowerCase().includes(q)
+        );
+    });
 
     return (
         <div
@@ -140,8 +170,8 @@ export default function DocumentRequestModal({
                             </h3>
                             <p className="text-[11px] text-blue-100">
                                 {isAdmin
-                                    ? 'Review specific form details, mark Ready for Pickup, and send SMS/Email alerts.'
-                                    : 'No login required • Fill out required details & pick up at Barangay Hall.'}
+                                    ? 'Verify scheduled pickup slots and mark requests as Picked Up / Done once claimed.'
+                                    : 'No login required • Choose your preferred pickup date & time slot at Barangay Hall.'}
                             </p>
                         </div>
                     </div>
@@ -158,25 +188,40 @@ export default function DocumentRequestModal({
                                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 space-y-1">
                                     <div className="font-extrabold text-sm flex items-center gap-1.5">
                                         <CheckCircle2 size={16} className="text-emerald-600" />
-                                        Request Submitted! Reference No: {lastReceipt.refCode}
+                                        Request Scheduled! Reference No: {lastReceipt.refCode}
                                     </div>
                                     <p className="text-xs text-emerald-800">
-                                        We will text/email <strong>{lastReceipt.contactNumber}</strong>
-                                        {lastReceipt.email ? ` / ${lastReceipt.email}` : ''} once your{' '}
-                                        <strong>{lastReceipt.docType}</strong> is ready for pickup at Barangay Hall.
+                                        Proceed to Barangay Hall for <strong>{lastReceipt.docType}</strong> on{' '}
+                                        <strong>{lastReceipt.pickupDate || 'your chosen date'}</strong> ({lastReceipt.pickupTimeSlot}).
+                                        Present your Reference No. and valid ID upon pickup.
                                     </p>
                                 </div>
                             )}
 
-                            {/* STEP 1: CHOOSE DOCUMENT BUTTONS */}
+                            {/* STEP 1: CHOOSE DOCUMENT + BETTER GOV-INSPIRED QUICK SEARCH */}
                             {step === 1 && (
                                 <div className="space-y-4">
-                                    <p className="text-xs font-semibold text-slate-500">
-                                        Piliin sa ibaba kung anong dokumento ang iyong ire-request upang lumabas ang tamang form:
-                                    </p>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <p className="text-xs font-semibold text-slate-500">
+                                            Piliin ang dokumentong kailangan mo upang lumabas ang form:
+                                        </p>
+                                        <div className="relative w-full sm:w-60">
+                                            <Search
+                                                size={14}
+                                                className="text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={docQuery}
+                                                onChange={(e) => setDocQuery(e.target.value)}
+                                                placeholder="Search certificate or service..."
+                                                className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs outline-none focus:border-blue-600"
+                                            />
+                                        </div>
+                                    </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                        {DOCUMENT_CATALOG.map((doc) => (
+                                        {filteredCatalog.map((doc) => (
                                             <button
                                                 key={doc.id}
                                                 type="button"
@@ -331,7 +376,7 @@ export default function DocumentRequestModal({
                                         </div>
                                     )}
 
-                                    {/* SPECIFIC FIELDS FOR CEDULA (COMMUNITY TAX CERTIFICATE) */}
+                                    {/* SPECIFIC FIELDS FOR CEDULA */}
                                     {selectedDoc.id === 'cedula' && (
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70">
                                             <div>
@@ -534,33 +579,38 @@ export default function DocumentRequestModal({
                                         </div>
                                     )}
 
-                                    {/* Contact Details for Pickup Notification */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    {/* Self-Selected Pickup Date & Time Slot (No Email/SMS Required) */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
                                         <div>
                                             <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                                                <Phone size={12} className="text-blue-600" /> Mobile Number (For Pickup SMS Alert) *
+                                                <Calendar size={12} className="text-blue-600" /> Preferred Pickup Date *
                                             </label>
                                             <input
                                                 required
-                                                type="tel"
-                                                value={contactNumber}
-                                                onChange={(e) => setContactNumber(e.target.value)}
-                                                placeholder="09XX-XXX-XXXX"
-                                                className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-blue-600"
+                                                type="date"
+                                                min={todayStr}
+                                                value={pickupDate}
+                                                onChange={(e) => setPickupDate(e.target.value)}
+                                                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm outline-none focus:border-blue-600"
                                             />
                                         </div>
 
                                         <div>
                                             <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                                                <Mail size={12} className="text-blue-600" /> Email Address (Optional)
+                                                <Clock size={12} className="text-blue-600" /> Preferred Pickup Time *
                                             </label>
-                                            <input
-                                                type="email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="resident@email.com"
-                                                className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-blue-600"
-                                            />
+                                            <select
+                                                required
+                                                value={pickupTimeSlot}
+                                                onChange={(e) => setPickupTimeSlot(e.target.value)}
+                                                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm outline-none focus:border-blue-600"
+                                            >
+                                                {PICKUP_TIME_SLOTS.map((slot) => (
+                                                    <option key={slot} value={slot}>
+                                                        {slot}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
 
@@ -576,83 +626,95 @@ export default function DocumentRequestModal({
                                             type="submit"
                                             className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow"
                                         >
-                                            <Send size={14} /> Submit {selectedDoc.title} Request
+                                            <Send size={14} /> Schedule &amp; Submit Request
                                         </button>
                                     </div>
                                 </form>
                             )}
                         </>
                     ) : (
-                        /* ADMIN VIEW: SHOW ALL SUBMITTED SPECIFIC DETAILS */
+                        /* ADMIN VIEW: SCHEDULED PICKUPS + PICKED UP / DONE STATUS CONTROL */
                         <div className="space-y-3">
-                            {requests.length === 0 ? (
+                            <div className="relative">
+                                <Search
+                                    size={14}
+                                    className="text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                />
+                                <input
+                                    type="text"
+                                    value={adminSearch}
+                                    onChange={(e) => setAdminSearch(e.target.value)}
+                                    placeholder="Filter by Reference Code, Resident Name, or Document..."
+                                    className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-300 text-xs outline-none focus:border-blue-600"
+                                />
+                            </div>
+
+                            {visibleAdminRequests.length === 0 ? (
                                 <p className="text-center text-slate-400 py-8 text-xs">
-                                    No resident document requests submitted yet.
+                                    No matching resident document requests found.
                                 </p>
                             ) : (
-                                requests.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                                    >
-                                        <div className="space-y-1 text-xs">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
-                                                    {item.refCode}
-                                                </span>
-                                                <span className="font-bold text-slate-900 text-sm">
-                                                    {item.fullName}
-                                                </span>
-                                                <span
-                                                    className={`px-2.5 py-0.5 rounded-full font-bold ${
-                                                        item.status === 'Ready for Pickup'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : 'bg-amber-100 text-amber-800'
-                                                    }`}
-                                                >
-                                                    {item.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-slate-800 font-bold">
-                                                {item.docType}
-                                            </p>
-                                            {item.specificDetails && (
-                                                <p className="text-slate-600 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200/80">
-                                                    {item.specificDetails}
-                                                </p>
-                                            )}
-                                            <p className="text-slate-500">
-                                                Address: {item.purokAddress} • Contact: <strong>{item.contactNumber}</strong>
-                                                {item.email ? ` • ${item.email}` : ''}
-                                            </p>
-                                        </div>
+                                visibleAdminRequests.map((item) => {
+                                    const isClaimed =
+                                        item.status === 'Picked Up' || item.status === 'Done';
 
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            {item.status !== 'Ready for Pickup' && (
-                                                <button
-                                                    onClick={() => onMarkReady(item.id)}
-                                                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1"
-                                                >
-                                                    <Clock size={13} /> Mark Ready for Pickup
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => copyPickupNotice(item)}
-                                                className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1"
-                                            >
-                                                {copiedId === item.id ? (
-                                                    <>
-                                                        <Check size={13} className="text-emerald-400" /> Copied
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Copy size={13} /> Copy SMS/Email Notice
-                                                    </>
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                                        >
+                                            <div className="space-y-1 text-xs">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                                                        {item.refCode}
+                                                    </span>
+                                                    <span className="font-bold text-slate-900 text-sm">
+                                                        {item.fullName}
+                                                    </span>
+                                                    <span
+                                                        className={`px-2.5 py-0.5 rounded-full font-bold ${
+                                                            isClaimed
+                                                                ? 'bg-emerald-100 text-emerald-800'
+                                                                : 'bg-amber-100 text-amber-800'
+                                                        }`}
+                                                    >
+                                                        {item.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-slate-800 font-bold">
+                                                    {item.docType}
+                                                </p>
+                                                {item.specificDetails && (
+                                                    <p className="text-slate-600 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200/80">
+                                                        {item.specificDetails}
+                                                    </p>
                                                 )}
-                                            </button>
+                                                <p className="text-slate-500">
+                                                    Address: {item.purokAddress} • Pickup:{' '}
+                                                    <strong className="text-slate-700">
+                                                        {item.pickupDate || 'N/A'} ({item.pickupTimeSlot || 'Anytime'})
+                                                    </strong>
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                {!isClaimed ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSetPickedUp(item)}
+                                                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5"
+                                                    >
+                                                        <CheckCheck size={14} /> Mark Picked Up
+                                                    </button>
+                                                ) : (
+                                                    <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs inline-flex items-center gap-1">
+                                                        <CheckCircle2 size={13} /> Claimed
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     )}

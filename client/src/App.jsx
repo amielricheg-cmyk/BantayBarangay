@@ -3,6 +3,7 @@ import { apiService } from './services/api';
 import Navbar from './components/Navbar';
 import LegalModal from './components/LegalModal';
 import DocumentRequestModal from './components/DocumentRequestModal';
+import BarangayChatbot from './components/BarangayChatbot';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -135,6 +136,16 @@ export default function App() {
         );
     };
 
+    const handleMarkDocPickedUp = (id) => {
+        setDocRequests((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, status: 'Picked Up' } : r))
+        );
+    };
+
+    const pendingDocCount = docRequests.filter(
+        (r) => r.status !== 'Picked Up' && r.status !== 'Done'
+    ).length;
+
     return (
         <div className="min-h-screen bg-slate-100 text-slate-900 font-sans">
             <Navbar
@@ -142,6 +153,7 @@ export default function App() {
                 setView={setView}
                 adminUser={adminUser}
                 onLogout={handleLogout}
+                onOpenDocRequests={() => setDocModalOpen(true)}
             />
 
             {/* Sync status banner while backend API is booting */}
@@ -158,6 +170,8 @@ export default function App() {
                     onEnterResident={() => setView('dashboard')}
                     onEnterLogin={() => setView(adminUser ? 'dashboard' : 'login')}
                     onOpenLegal={(type) => setLegalType(type)}
+                    onOpenDocRequests={() => setDocModalOpen(true)}
+                    onEnterHotlines={() => setView('hotlines')}
                 />
             )}
 
@@ -190,7 +204,7 @@ export default function App() {
                     onSubmitComment={handleSubmitComment}
                     onDeleteComment={handleDeleteComment}
                     onOpenDocRequests={() => setDocModalOpen(true)}
-                    docRequestCount={docRequests.filter((r) => r.status !== 'Ready for Pickup').length}
+                    docRequestCount={pendingDocCount}
                 />
             )}
 
@@ -204,7 +218,10 @@ export default function App() {
                 requests={docRequests}
                 onSubmitRequest={handleSubmitDocRequest}
                 onMarkReady={handleMarkDocReady}
+                onMarkPickedUp={handleMarkDocPickedUp}
             />
+
+            <BarangayChatbot summary={summary} projects={projects} />
 
             <LegalModal type={legalType} onClose={() => setLegalType(null)} />
         </div>
